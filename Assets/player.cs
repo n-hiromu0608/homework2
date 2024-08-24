@@ -2,56 +2,64 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class player : MonoBehaviour
+public class player : hp
 {
-    [SerializeField] float _speed = 1f;
-    [SerializeField] float _extinc = 0.3f;
-    [SerializeField] float _gvScale = 0.3f;
-    [SerializeField] float _scale = 10.0f;
-    [SerializeField] float _jumppw = 1f;
-    [SerializeField] GameObject _bulletPrehub;
+    [Tooltip("「Bullet」という名前のプレハブをアタッチして下さい")]
+    [SerializeField] private GameObject _bulletPrefab;
+    [SerializeField] private float _speed = 1f; //移動の速さ
+    [SerializeField] private float _jumpPower = 1f; //ジャンプ力
+    [SerializeField] private float _gravity = 9.8f; // 重力
+    [SerializeField] public float _width = 1.0f; //幅
+    [SerializeField] public float _height = 1.0f; //高さ
+    [SerializeField] private int _life = 5; //ライフ
 
-    float _jumpY = 1f;
-    float _jtime = 0f;
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
+    private bool _isJumping = false;
+    private float _jumpSpeed = 0f; //ジャンプの速さ
 
-    // Update is called once per frame
     void Update()
     {
-        float v = Input.GetAxis("Horizontal");
-        this.transform.position += new Vector3(v, 0, 0) * Time.deltaTime * _speed;
-        if(_jumpY < 0.001f)
+        float x = Input.GetAxis("Horizontal");
+        //移動
+        var horizontal = new Vector3(x * _speed * Time.deltaTime, 0, 0);
+        transform.position += horizontal;
+
+        //Wが押されたら弾を生成
+        if (Input.GetKeyDown(KeyCode.W))
         {
-            if(Input.GetKeyDown(KeyCode.Space))
+            Instantiate(_bulletPrefab, transform.position, Quaternion.identity);
+        }
+
+        // ジャンプ
+        if (Input.GetKeyDown(KeyCode.Space) && _isJumping == false)
+        {
+            _isJumping = true;
+            _jumpSpeed = _jumpPower;
+        }
+
+        // ジャンプ中
+        if (_isJumping)
+        {
+            _jumpSpeed -= _gravity * Time.deltaTime; //重力を与える
+            transform.Translate(new Vector2(0, _jumpSpeed) * Time.deltaTime);
+
+
+            // 地面に着いたらリセット
+            if (transform.position.y <= -3.4)
             {
-                _jumpY = _jumppw;
-                _jtime = 0.0f;
+                _isJumping = false;
+                _jumpSpeed = 0;
             }
         }
-        else
-        {
-            _jtime += Time.deltaTime;
-            _jumpY *= 1.0f - Time.deltaTime * _extinc;
-            float y = this.transform.position.y;
-            y = (_jumpY * _jtime - 9.8f * _jtime * _jtime * _gvScale) * _scale + -4.0f;
+    }
 
-            if (y < -4.0f)
-            {
-                y = -4;
-                _jtime = 0;
-                _jumpY = 0;
-            }
+    /// <summary>
+    /// プレイヤーにダメージ
+    /// </summary>
+    public void PlayerDamage()
+    {
+        _life--;
+        Debug.Log(_life);
 
-            this.transform.position = new Vector3(this.transform.position.x, y, this.transform.position.z);
-        }
-
-        if(Input.GetKeyDown(KeyCode.F))
-        {
-            Instantiate(_bulletPrehub, transform.position, Quaternion.identity);
-        }
+        if (_life == 0) Debug.Log("GAME OVER!");
     }
 }

@@ -2,14 +2,20 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class enemy : MonoBehaviour
+public class enemy : hp
 {
-    [SerializeField] Transform _player;
-    [SerializeField] GameObject _bulletPrefab;
-    [SerializeField] float _interval = 1.0f;
-    [SerializeField] float attackDistance = 5;
-    private float nextFireTime = 0f;
-    float _timer = 0.0f;
+    [Tooltip("「EBullet」という名前のプレハブをアタッチして下さい")]
+    [SerializeField] GameObject _enemyBulletPrefab;
+    [SerializeField] float _shootDistance = 5f; //この距離以下で撃てる
+    [SerializeField] int _Interval = 1; //発射間隔
+    [Tooltip("「Player」をアタッチして下さい")]
+    [SerializeField] Transform _player; //プレイヤーの座標
+    [SerializeField] public float _width = 1f; //幅
+    [SerializeField] public float _height = 1f; //高さ
+    [SerializeField] public int _life = 3; //ライフ
+
+    private float _currentTime; //経過した秒数
+    private bool _isShoot = false; //発射済みかどうか
 
     // Start is called before the first frame update
     void Start()
@@ -20,17 +26,43 @@ public class enemy : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        float distanceToPlayer = Vector3.Distance(transform.position, _player.position);
+        //プレイヤーと敵の距離
+        float distance = Vector2.Distance(transform.position, _player.position);
 
-        if (distanceToPlayer <= attackDistance && Time.time >= nextFireTime)
+        if (distance < _shootDistance)
         {
-            _timer += Time.deltaTime;
-            if (_timer > _interval)
+            if (_isShoot == false)
             {
-                _timer -= _interval;
-
-                Instantiate(_bulletPrefab, transform.position, Quaternion.identity);
+                Instantiate(_enemyBulletPrefab, transform.position, Quaternion.identity);
+                _isShoot = true;
+                _currentTime = 0; //経過した時間を0に戻す
             }
+
+            else
+            {
+                //_currentTime += Time.time; ←だと一度に多くの弾が生成されて長い棒のようになるのはなぜか？
+                _currentTime += Time.deltaTime;
+
+                if (_Interval < _currentTime)
+                {
+                    Instantiate(_enemyBulletPrefab, transform.position, Quaternion.identity);
+                    _currentTime = 0; //経過した時間を0に戻す
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// 敵にダメージ
+    /// </summary>
+    public void EnemyDamage()
+    {
+        _life--;
+        Debug.Log(_life);
+
+        if (_life == 0)
+        {
+            Destroy(gameObject);
         }
     }
 }

@@ -97,7 +97,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1ed1f4741bd806845bd63f34e8583f9a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _hp: 0
+  _enemyBulletPrefab: {fileID: 4483075707784465710, guid: 662c91f21d4bd0f4292657f65367b0c2, type: 3}
+  _shootDistance: 5
+  _Interval: 1
   _player: {fileID: 0}
-  _bulletPrefab: {fileID: 4483075707784465710, guid: 662c91f21d4bd0f4292657f65367b0c2, type: 3}
-  _interval: 1
-  attackDistance: 20
+  _width: 1
+  _height: 1
+  _life: 3
